@@ -78,13 +78,14 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				position: relative;
 				isolation: isolate;
 				min-height: 100vh;
-				padding: 1rem;
+				padding: 1rem 1rem 4rem;
 				background-image:
 					linear-gradient(180deg, rgba(15, 18, 25, 0.42), rgba(15, 18, 25, 0.2) 45%, rgba(196, 182, 143, 0.96) 100%),
 					var(--hero-image);
 				background-position: center top;
 				background-repeat: no-repeat;
 				background-size: cover;
+				background-attachment: fixed;
 			}
 			.top-inner {
 				width: min(1280px, 100%);
@@ -95,7 +96,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				align-items: flex-start;
 				justify-content: space-between;
 				gap: 1rem;
-				padding: 1rem 0 1.25rem;
+				padding: 0.8rem 0 1rem;
 				color: white;
 			}
 			.site-title {
@@ -107,7 +108,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 			.site-title h1 {
 				margin-bottom: 0.4rem;
 				color: white;
-				font-size: clamp(2.6rem, 6vw, 5.8rem);
+				font-size: clamp(2.6rem, 6vw, 4.5rem);
 				text-shadow: 0 3px 20px rgba(var(--black), 35%);
 			}
 			.site-title p {
@@ -117,6 +118,9 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				font-size: 1.1rem;
 			}
 			.site-actions {
+				position: sticky;
+				top: 0.8rem;
+				z-index: 20;
 				display: flex;
 				flex-wrap: wrap;
 				justify-content: flex-end;
@@ -321,6 +325,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				gap: 1.25rem;
 				width: min(1120px, calc(100% - 2rem));
 				margin: 2rem auto 0;
+				padding-bottom: 2rem;
 			}
 			.feed-header {
 				display: flex;
@@ -330,7 +335,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 			}
 			.feed-header p {
 				margin: 0;
-				color: rgb(var(--gray));
+				color: white;
 			}
 			.update {
 				padding: 1.25rem;
@@ -444,12 +449,34 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				.top-section {
 					padding: 0.5rem;
 					background-position: center top;
+					background-attachment: scroll;
 				}
 				.site-title h1 {
-					font-size: clamp(2.3rem, 13vw, 4rem);
+					font-size: clamp(1.45rem, 8vw, 2.4rem);
 				}
 				.site-title p {
-					font-size: 1rem;
+					display: none;
+				}
+				.site-hero {
+					margin: 0 -0.5rem;
+					padding: 0.55rem 0.5rem 0.7rem;
+				}
+				.site-actions {
+					gap: 0.45rem;
+					top: 0.5rem;
+					width: fit-content;
+					margin-left: auto;
+					padding: 0.35rem;
+					border-radius: 999px;
+					background: rgba(15, 18, 25, 0.42);
+					backdrop-filter: blur(8px);
+				}
+				.button {
+					padding: 0.55rem 0.7rem;
+					font-size: 0.9rem;
+				}
+				.map-anchor {
+					margin-top: clamp(12rem, 45vh, 28rem);
 				}
 				.map-panel,
 				.map-panel iframe,
@@ -480,15 +507,14 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				<div class="top-inner">
 					<header class="site-hero" aria-labelledby="route-title">
 						<div class="site-title">
-							<p class="kicker">Canada to Mexico by bike</p>
-							<h1 id="route-title">Beth and Tom on the Great Divide</h1>
+							<h1 id="route-title">Bikepacking from Canada to Mexico</h1>
 							<p>
 								Following the route, the latest Garmin location, and short updates from the road.
 							</p>
 						</div>
 						<div class="site-actions" aria-label="Page actions">
 							<button class="button secondary" type="button" data-open-about>
-								About Beth & Tom
+								About
 							</button>
 							{
 								CHARITY_URL ? (
@@ -560,6 +586,57 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 							</div>
 						</aside>
 					</section>
+
+					<section class="feed" id="latest-updates" aria-labelledby="latest-updates-title">
+						<div class="feed-header">
+							<div>
+								<p class="kicker">Trail journal</p>
+								<h2 id="latest-updates-title">Trip Updates</h2>
+							</div>
+						</div>
+
+						{
+							updates.length > 0 ? (
+								updates.map(({ post, Content }) => (
+									<article class="update">
+										<div class="update-header">
+											<div>
+												<p class="update-meta">
+													{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
+												</p>
+												<h3>{getPostTitle(post)}</h3>
+											</div>
+											<div class="update-stats" aria-label="Ride details">
+												{(post.data.routeStart || post.data.routeEnd) && (
+													<span>
+														{post.data.routeStart}
+														{post.data.routeStart && post.data.routeEnd ? ' → ' : ''}
+														{post.data.routeEnd}
+													</span>
+												)}
+												{post.data.distanceKm && <span>{post.data.distanceKm} km</span>}
+												{post.data.elevationM && <span>{post.data.elevationM} m up</span>}
+											</div>
+										</div>
+										<div class="update-body">
+											<Content />
+										</div>
+										{post.data.photos.length > 0 && (
+											<div class="photo-grid" aria-label={`${getPostTitle(post)} photos`}>
+												{post.data.photos.map((photo) => (
+													<a href={photo} target="_blank" rel="noreferrer">
+														<img src={photo} alt="" loading="lazy" />
+													</a>
+												))}
+											</div>
+										)}
+									</article>
+								))
+							) : (
+								<p>No updates yet. Check back once we are on the road.</p>
+							)
+						}
+					</section>
 				</div>
 			</section>
 
@@ -599,56 +676,6 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				</div>
 			</dialog>
 
-			<section class="feed" id="latest-updates" aria-labelledby="latest-updates-title">
-				<div class="feed-header">
-					<div>
-						<p class="kicker">Trail journal</p>
-						<h2 id="latest-updates-title">Trip Updates</h2>
-					</div>
-				</div>
-
-				{
-					updates.length > 0 ? (
-						updates.map(({ post, Content }) => (
-							<article class="update">
-								<div class="update-header">
-									<div>
-										<p class="update-meta">
-											{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
-										</p>
-										<h3>{getPostTitle(post)}</h3>
-									</div>
-									<div class="update-stats" aria-label="Ride details">
-										{(post.data.routeStart || post.data.routeEnd) && (
-											<span>
-												{post.data.routeStart}
-												{post.data.routeStart && post.data.routeEnd ? ' → ' : ''}
-												{post.data.routeEnd}
-											</span>
-										)}
-										{post.data.distanceKm && <span>{post.data.distanceKm} km</span>}
-										{post.data.elevationM && <span>{post.data.elevationM} m up</span>}
-									</div>
-								</div>
-								<div class="update-body">
-									<Content />
-								</div>
-								{post.data.photos.length > 0 && (
-									<div class="photo-grid" aria-label={`${getPostTitle(post)} photos`}>
-										{post.data.photos.map((photo) => (
-											<a href={photo} target="_blank" rel="noreferrer">
-												<img src={photo} alt="" loading="lazy" />
-											</a>
-										))}
-									</div>
-								)}
-							</article>
-						))
-					) : (
-						<p>No updates yet. Check back once we are on the road.</p>
-					)
-				}
-			</section>
 		</main>
 		<Footer />
 		<script>
