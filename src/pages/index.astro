@@ -80,7 +80,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				min-height: 100vh;
 				padding: 1rem 1rem 4rem;
 				background-image:
-					linear-gradient(180deg, rgba(15, 18, 25, 0.42), rgba(15, 18, 25, 0.2) 45%, rgba(196, 182, 143, 0.96) 100%),
+					linear-gradient(180deg, rgba(15, 18, 25, 0.42), rgba(15, 18, 25, 0.18) 45%, rgba(15, 18, 25, 0) 100%),
 					var(--hero-image);
 				background-position: center top;
 				background-repeat: no-repeat;
@@ -230,10 +230,9 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 			.trip-panel {
 				display: flex;
 				flex-direction: column;
-				justify-content: space-between;
 				gap: 1rem;
 				padding: 1.25rem;
-				background: rgba(255, 255, 255, 0.82);
+				background: rgba(234, 233, 241, 0.82);
 				backdrop-filter: blur(7px);
 			}
 			.kicker {
@@ -303,7 +302,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 			}
 			.about-grid {
 				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
+				grid-template-columns: repeat(2, minmax(0, 1fr));
 				gap: 1rem;
 				margin-top: 1rem;
 			}
@@ -311,7 +310,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 				padding: 1rem;
 				border: 1px solid rgb(var(--gray-light));
 				border-radius: 18px;
-				background: #fff;
+				background: #ffffff;
 			}
 			.about-card h3 {
 				font-size: 1.1rem;
@@ -645,34 +644,43 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 					<div class="dialog-header">
 						<div>
 							<p class="kicker">About the ride</p>
-							<h2 id="about-title">Beth, Tom, and the charities</h2>
+							<h2 id="about-title">What are we doing?</h2>
 						</div>
 						<button class="close-button" type="button" data-close-about aria-label="Close about dialog">×</button>
 					</div>
 					<p>
-						We are Beth and Tom from Sheffield, UK, and we are preparing to ride the Great Divide
-						Mountain Bike Route from Canada to Mexico.
+						Hi. We are Beth and Tom from Sheffield, UK 👋
 					</p>
 					<p>
-						This site collects the route map, short updates from the road, photos from each stage,
-						and links to the charities we are supporting. The practical rhythm is simple: ride, send
-						a Garmin inReach point when we can, post a short note when we have signal, then keep
-						moving south.
+						New to bikepacking and newly married, we are attempting to cycle unsupported from Canada to Mexico along
+					    the Great Divide Mountain Bike Route (GDMBR). This journey follows the continetal divide of the USA 
+						mostly on unpaved tracks, covering roughly 4,000km with 53,000m of elevation gain. Along the way there will
+						be bear filled forests, high mountain passes and vast desert plains. 
+					</p>
+					<p>
+					    In taking on this challenge we would like to try and raise some money for two great charities:
 					</p>
 					<div class="about-grid">
 						<article class="about-card">
-							<h3>Beth</h3>
-							<p>Taking on the Divide for the challenge, the landscapes, and the causes we care about.</p>
+							<h3>Breast Cancer Now</h3>
+							<p>
+							    This charity focuses on research to improve the prevention, diagnosis and treatment of breast
+								cancer. We have chosen the GDMBR as a way to follow in Beth's parents footsteps/tyretracks -
+								They completed this route before Jane's cancer journey. Beth will be riding the route on a bike
+								that has been built mostly using components from the bike Jane completed the trip on.
+							</p>
 						</article>
 						<article class="about-card">
-							<h3>Tom</h3>
-							<p>Documenting the route, keeping the bikes moving, and sharing notes from the road.</p>
-						</article>
-						<article class="about-card">
-							<h3>Charities</h3>
-							<p>Donation links and confirmed charity details can be added here when ready.</p>
+							<h3>Dukes Barn</h3>
+							<p>
+							    Focuses on making outdoor adventures accesible for those with additional needs.
+							</p>
 						</article>
 					</div>
+					<p>
+					    Any donations to either of these charites would be very gratefully recieved! All funds raised will be
+						going directly to charity, the trip itself is self funded.
+					</p>
 				</div>
 			</dialog>
 
