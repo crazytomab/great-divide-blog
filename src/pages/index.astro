@@ -30,7 +30,7 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 			? `${post.data.routeStart ?? ''}${post.data.routeStart && post.data.routeEnd ? ' → ' : ''}${post.data.routeEnd ?? ''}`
 			: 'Route pending';
 
-	return `${post.data.day ? `Day ${post.data.day}` : 'Update'} · ${route}`;
+	return `${post.data.day ? `Day ${post.data.day}` : 'Update'}: ${route}`;
 };
 ---
 
@@ -606,15 +606,8 @@ const getPostTitle = (post: (typeof posts)[number]) => {
 												<h3>{getPostTitle(post)}</h3>
 											</div>
 											<div class="update-stats" aria-label="Ride details">
-												{(post.data.routeStart || post.data.routeEnd) && (
-													<span>
-														{post.data.routeStart}
-														{post.data.routeStart && post.data.routeEnd ? ' → ' : ''}
-														{post.data.routeEnd}
-													</span>
-												)}
 												{post.data.distanceKm && <span>{post.data.distanceKm} km</span>}
-												{post.data.elevationM && <span>{post.data.elevationM} m up</span>}
+												{post.data.elevationM && <span>{post.data.elevationM} m</span>}
 											</div>
 										</div>
 										<div class="update-body">
