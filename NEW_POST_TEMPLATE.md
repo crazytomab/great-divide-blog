@@ -11,9 +11,13 @@ Write the update text here.
 
 [![Short image description](/images/posts/day3/photo-name.jpg)](/images/posts/day3/photo-name.jpg)
 
-Write a note about the image here.
+*Short caption for the image.*
+
+Write a note about the image here if you want more detail.
 
 [![Another short image description](/images/posts/day3/another-photo-name.jpg)](/images/posts/day3/another-photo-name.jpg)
+
+*Another short caption.*
 
 ## Phone posting checklist
 
@@ -22,3 +26,5 @@ Write a note about the image here.
 3. Upload photos to `public/images/posts/day3/`.
 4. Paste image links where they should appear in the text:
    `[![Caption](/images/posts/day3/photo.jpg)](/images/posts/day3/photo.jpg)`
+5. Add a caption on the next line using italics:
+   `*Caption text here.*`
