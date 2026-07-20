@@ -28,6 +28,17 @@ const route =
 		: 'Route pending';
 const pageTitle = title ?? `${day ? `Day ${day}` : 'Update'} · ${route}`;
 const pageDescription = description ?? `Update from ${route}`;
+const normalizedPhotos = photos.map((photo) =>
+	typeof photo === 'string'
+		? {
+				src: photo,
+				caption: 'View photo',
+			}
+		: {
+				src: photo.src,
+				caption: photo.caption ?? 'View photo',
+			},
+);
 ---
 
 <html lang="en">
@@ -55,30 +66,97 @@ const pageDescription = description ?? `Update from ${route}`;
 				padding: 1em;
 				color: rgb(var(--gray-dark));
 			}
-			.prose img {
-				display: block;
-				width: min(100%, 620px);
-				max-height: 460px;
-				margin: 1rem auto;
-				border-radius: 18px;
-				object-fit: cover;
-				box-shadow: 0 10px 30px rgba(var(--gray), 22%);
+			.post-gallery {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+				gap: 0.75rem;
+				margin-top: 1.5rem;
 			}
-			.prose a:has(img) {
-				display: block;
-				width: fit-content;
-				max-width: 100%;
-				margin: 0 auto;
+			.gallery-photo {
+				display: grid;
+				grid-template-rows: 1fr auto;
+				padding: 0;
+				overflow: hidden;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 16px;
+				background: white;
 				color: inherit;
-				text-decoration: none;
+				font: inherit;
+				text-align: left;
+				cursor: pointer;
 			}
-			.prose p:has(> em:only-child) {
-				width: min(100%, 620px);
-				margin: -0.35rem auto 1rem;
-				color: rgb(var(--gray));
-				font-size: 0.9rem;
-				line-height: 1.45;
+			.gallery-photo figure {
+				margin: 0;
+			}
+			.gallery-photo img {
+				display: block;
+				width: 100%;
+				aspect-ratio: 4 / 3;
+				object-fit: cover;
+				transition: transform 0.2s ease;
+			}
+			.gallery-photo figcaption {
+				padding: 0.55rem 0.65rem;
+				color: rgb(var(--gray-dark));
+				font-size: 0.85rem;
+				line-height: 1.3;
+			}
+			.gallery-photo:hover img {
+				transform: scale(1.03);
+			}
+			.gallery-dialog {
+				width: min(1100px, calc(100% - 1rem));
+				max-height: calc(100vh - 1rem);
+				padding: 0;
+				border: 0;
+				border-radius: 24px;
+				background: rgb(var(--gray-dark));
+				color: white;
+				box-shadow: 0 24px 70px rgba(var(--black), 45%);
+			}
+			.gallery-dialog::backdrop {
+				background: rgba(var(--black), 75%);
+				backdrop-filter: blur(3px);
+			}
+			.gallery-inner {
+				display: grid;
+				grid-template-columns: auto minmax(0, 1fr) auto;
+				align-items: center;
+				gap: 0.75rem;
+				padding: 1rem;
+			}
+			.gallery-image-wrap img {
+				display: block;
+				width: 100%;
+				max-height: calc(100vh - 9rem);
+				object-fit: contain;
+				border-radius: 16px;
+			}
+			.gallery-caption {
+				margin: 0.75rem 0 0;
+				color: rgba(255, 255, 255, 0.82);
 				text-align: center;
+			}
+			.gallery-close,
+			.gallery-nav {
+				border: 0;
+				border-radius: 999px;
+				background: rgba(255, 255, 255, 0.14);
+				color: white;
+				font: inherit;
+				cursor: pointer;
+			}
+			.gallery-close {
+				position: absolute;
+				top: 0.75rem;
+				right: 0.75rem;
+				width: 2.4rem;
+				height: 2.4rem;
+			}
+			.gallery-nav {
+				width: 2.8rem;
+				height: 2.8rem;
+				font-size: 1.8rem;
 			}
 			.title {
 				margin-bottom: 1em;
@@ -137,10 +215,15 @@ const pageDescription = description ?? `Update from ${route}`;
 				.details {
 					grid-template-columns: repeat(2, minmax(0, 1fr));
 				}
-				.prose img,
-				.prose p:has(> em:only-child) {
-					width: 100%;
-					max-height: 360px;
+				.post-gallery {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
+				.gallery-inner {
+					grid-template-columns: 1fr;
+					padding: 0.75rem;
+				}
+				.gallery-nav {
+					display: none;
 				}
 			}
 		</style>
@@ -197,10 +280,15 @@ const pageDescription = description ?? `Update from ${route}`;
 					</div>
 					<slot />
 					{
-						photos.length > 0 && (
-							<div class="photo-grid" aria-label="Ride photos">
-								{photos.map((photo) => (
-									<img src={photo} alt="" loading="lazy" />
+						normalizedPhotos.length > 0 && (
+							<div class="post-gallery" aria-label="Ride photos">
+								{normalizedPhotos.map((photo, photoIndex) => (
+									<button class="gallery-photo" type="button" data-photo={photoIndex}>
+										<figure>
+											<img src={photo.src} alt={photo.caption ?? ''} loading="lazy" />
+											<figcaption>{photo.caption}</figcaption>
+										</figure>
+									</button>
 								))}
 							</div>
 						)
@@ -208,6 +296,61 @@ const pageDescription = description ?? `Update from ${route}`;
 				</div>
 			</article>
 		</main>
+		<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Photo gallery">
+			<button class="gallery-close" type="button" data-gallery-close aria-label="Close gallery">×</button>
+			<div class="gallery-inner">
+				<button class="gallery-nav" type="button" data-gallery-prev aria-label="Previous photo">‹</button>
+				<div class="gallery-image-wrap">
+					<img data-gallery-image alt="" />
+					<p class="gallery-caption" data-gallery-caption></p>
+				</div>
+				<button class="gallery-nav" type="button" data-gallery-next aria-label="Next photo">›</button>
+			</div>
+		</dialog>
+		<script id="gallery-data" type="application/json" set:html={JSON.stringify(normalizedPhotos)} />
 		<Footer />
+		<script>
+			const photos = JSON.parse(document.getElementById('gallery-data')?.textContent || '[]');
+			const galleryDialog = document.getElementById('gallery-dialog');
+			const galleryImage = document.querySelector('[data-gallery-image]');
+			const galleryCaption = document.querySelector('[data-gallery-caption]');
+			let activePhoto = 0;
+			let touchStartX = 0;
+
+			const showPhoto = () => {
+				const photo = photos[activePhoto];
+				if (!photo || !(galleryImage instanceof HTMLImageElement) || !galleryCaption) return;
+				galleryImage.src = photo.src;
+				galleryImage.alt = photo.caption || '';
+				galleryCaption.textContent = photo.caption || '';
+			};
+
+			const movePhoto = (direction) => {
+				if (!photos.length) return;
+				activePhoto = (activePhoto + direction + photos.length) % photos.length;
+				showPhoto();
+			};
+
+			document.querySelectorAll('[data-photo]').forEach((button) => {
+				button.addEventListener('click', () => {
+					activePhoto = Number(button.getAttribute('data-photo') || 0);
+					showPhoto();
+					if (galleryDialog instanceof HTMLDialogElement) galleryDialog.showModal();
+				});
+			});
+			document.querySelector('[data-gallery-close]')?.addEventListener('click', () => {
+				if (galleryDialog instanceof HTMLDialogElement) galleryDialog.close();
+			});
+			document.querySelector('[data-gallery-prev]')?.addEventListener('click', () => movePhoto(-1));
+			document.querySelector('[data-gallery-next]')?.addEventListener('click', () => movePhoto(1));
+			galleryDialog?.addEventListener('touchstart', (event) => {
+				touchStartX = event.changedTouches[0]?.clientX || 0;
+			});
+			galleryDialog?.addEventListener('touchend', (event) => {
+				const touchEndX = event.changedTouches[0]?.clientX || 0;
+				const delta = touchEndX - touchStartX;
+				if (Math.abs(delta) > 50) movePhoto(delta > 0 ? -1 : 1);
+			});
+		</script>
 	</body>
 </html>

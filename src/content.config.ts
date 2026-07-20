@@ -18,7 +18,17 @@ const blog = defineCollection({
 			routeEnd: z.string().optional(),
 			distanceKm: z.number().int().positive().optional(),
 			elevationM: z.number().int().positive().optional(),
-			photos: z.array(z.string()).default([]),
+			photos: z
+				.array(
+					z.union([
+						z.string(),
+						z.object({
+							src: z.string(),
+							caption: z.string().optional(),
+						}),
+					]),
+				)
+				.default([]),
 		}),
 });
 
