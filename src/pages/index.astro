@@ -2,9 +2,9 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
 import { getCollection, render } from 'astro:content';
-import { GARMIN_MAP_EMBED_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import HeroBackground from '../assets/BandTheader.jpg';
+import { CHARITY_URL, GARMIN_MAP_EMBED_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog')).sort((a, b) => {
 	const dateDiff = (b.data.pubDate?.valueOf() ?? 0) - (a.data.pubDate?.valueOf() ?? 0);
@@ -23,6 +23,15 @@ const totalDistanceKm = posts.reduce((total, post) => total + (post.data.distanc
 const totalElevationM = posts.reduce((total, post) => total + (post.data.elevationM ?? 0), 0);
 const latestLocation =
 	latestPost?.data.routeEnd || latestPost?.data.routeStart || (posts.length > 0 ? 'Location pending' : 'Not started');
+
+const getPostTitle = (post: (typeof posts)[number]) => {
+	const route =
+		post.data.routeStart || post.data.routeEnd
+			? `${post.data.routeStart ?? ''}${post.data.routeStart && post.data.routeEnd ? ' → ' : ''}${post.data.routeEnd ?? ''}`
+			: 'Route pending';
+
+	return `${post.data.day ? `Day ${post.data.day}` : 'Update'} · ${route}`;
+};
 ---
 
 <!doctype html>
@@ -30,9 +39,14 @@ const latestLocation =
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			:global(body) {
+				background: #c4b68f;
+				background-image: none;
+			}
 			main {
-				width: min(1280px, calc(100% - 2rem));
-				padding-top: 1.5rem;
+				width: 100%;
+				max-width: none;
+				padding: 0;
 			}
 			.button {
 				display: inline-flex;
@@ -49,15 +63,73 @@ const latestLocation =
 				cursor: pointer;
 			}
 			.button.secondary {
-				background: rgb(var(--gray-light));
+				background: rgba(255, 255, 255, 0.86);
 				color: rgb(var(--gray-dark));
+			}
+			.button.charity {
+				background: #f6d36f;
+				color: rgb(var(--gray-dark));
+			}
+			.button.disabled {
+				cursor: not-allowed;
+				opacity: 0.78;
+			}
+			.top-section {
+				position: relative;
+				isolation: isolate;
+				min-height: 100vh;
+				padding: 1rem;
+				background-image:
+					linear-gradient(180deg, rgba(15, 18, 25, 0.42), rgba(15, 18, 25, 0.2) 45%, rgba(196, 182, 143, 0.96) 100%),
+					var(--hero-image);
+				background-position: center top;
+				background-repeat: no-repeat;
+				background-size: cover;
+			}
+			.top-inner {
+				width: min(1280px, 100%);
+				margin: 0 auto;
+			}
+			.site-hero {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 1rem 0 1.25rem;
+				color: white;
+			}
+			.site-title {
+				max-width: 760px;
+			}
+			.site-title .kicker {
+				color: rgba(255, 255, 255, 0.78);
+			}
+			.site-title h1 {
+				margin-bottom: 0.4rem;
+				color: white;
+				font-size: clamp(2.6rem, 6vw, 5.8rem);
+				text-shadow: 0 3px 20px rgba(var(--black), 35%);
+			}
+			.site-title p {
+				max-width: 640px;
+				margin: 0;
+				color: rgba(255, 255, 255, 0.86);
+				font-size: 1.1rem;
+			}
+			.site-actions {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-end;
+				gap: 0.75rem;
+				padding-top: 0.35rem;
 			}
 			.map-anchor {
 				display: grid;
 				grid-template-columns: minmax(0, 1fr) 320px;
 				gap: 1rem;
-				min-height: calc(100vh - 170px);
-				margin-bottom: 2rem;
+				min-height: calc(100vh - 2rem);
+				margin-top: clamp(18rem, 58vh, 44rem);
+				margin-bottom: 0;
 			}
 			.map-panel,
 			.trip-panel,
@@ -70,18 +142,20 @@ const latestLocation =
 			.map-panel {
 				position: relative;
 				overflow: hidden;
-				min-height: 620px;
+				min-height: 560px;
+				background: rgba(255, 255, 255, 0.84);
+				backdrop-filter: blur(5px);
 			}
 			.map-panel iframe {
 				width: 100%;
 				height: 100%;
-				min-height: 620px;
+				min-height: 560px;
 				border: 0;
 			}
 			.map-fallback {
 				position: relative;
 				display: grid;
-				min-height: 620px;
+				min-height: 560px;
 				padding: 2rem;
 				overflow: hidden;
 				background:
@@ -155,6 +229,8 @@ const latestLocation =
 				justify-content: space-between;
 				gap: 1rem;
 				padding: 1.25rem;
+				background: rgba(255, 255, 255, 0.82);
+				backdrop-filter: blur(7px);
 			}
 			.kicker {
 				margin: 0 0 0.5rem;
@@ -243,7 +319,8 @@ const latestLocation =
 			.feed {
 				display: grid;
 				gap: 1.25rem;
-				margin-top: 2rem;
+				width: min(1120px, calc(100% - 2rem));
+				margin: 2rem auto 0;
 			}
 			.feed-header {
 				display: flex;
@@ -294,6 +371,23 @@ const latestLocation =
 			.update-body p:last-child {
 				margin-bottom: 0;
 			}
+			.update-body img {
+				display: block;
+				width: min(100%, 760px);
+				margin: 1rem 0;
+				border-radius: 18px;
+				box-shadow: 0 10px 30px rgba(var(--gray), 22%);
+			}
+			.update-body a:has(img) {
+				display: block;
+				width: fit-content;
+				max-width: 100%;
+				color: inherit;
+				text-decoration: none;
+			}
+			.update-body em {
+				color: rgb(var(--gray));
+			}
 			.photo-grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -326,6 +420,13 @@ const latestLocation =
 				.map-fallback {
 					min-height: 520px;
 				}
+				.site-hero {
+					display: block;
+				}
+				.site-actions {
+					justify-content: flex-start;
+					margin-top: 1rem;
+				}
 				.trip-panel {
 					display: grid;
 					grid-template-columns: 1fr;
@@ -337,8 +438,18 @@ const latestLocation =
 			}
 			@media (max-width: 720px) {
 				main {
-					width: min(100%, calc(100% - 1rem));
-					padding: 0.75rem 0.5rem;
+					width: 100%;
+					padding: 0;
+				}
+				.top-section {
+					padding: 0.5rem;
+					background-position: center top;
+				}
+				.site-title h1 {
+					font-size: clamp(2.3rem, 13vw, 4rem);
+				}
+				.site-title p {
+					font-size: 1rem;
 				}
 				.map-panel,
 				.map-panel iframe,
@@ -364,69 +475,92 @@ const latestLocation =
 		</style>
 	</head>
 	<body>
-		<Header />
 		<main>
-			<section class="map-anchor" aria-labelledby="route-title">
-				<div class="map-panel" id="progress-map" aria-label="Great Divide progress map">
-					{
-						GARMIN_MAP_EMBED_URL ? (
-							<iframe title="Garmin inReach progress map" src={GARMIN_MAP_EMBED_URL} loading="lazy" />
-						) : (
-							<div class="map-fallback">
-								<div class="route-label">
-									<p class="kicker">Canada to Mexico by bike</p>
-									<h1 id="route-title">Beth and Tom on the Great Divide</h1>
-									<p>
-										The Garmin inReach map will sit here once the MapShare embed URL is added.
-										For now, this panel anchors the route and latest known point from the updates.
-									</p>
+			<section class="top-section" style={`--hero-image: url(${HeroBackground.src});`}>
+				<div class="top-inner">
+					<header class="site-hero" aria-labelledby="route-title">
+						<div class="site-title">
+							<p class="kicker">Canada to Mexico by bike</p>
+							<h1 id="route-title">Beth and Tom on the Great Divide</h1>
+							<p>
+								Following the route, the latest Garmin location, and short updates from the road.
+							</p>
+						</div>
+						<div class="site-actions" aria-label="Page actions">
+							<button class="button secondary" type="button" data-open-about>
+								About Beth & Tom
+							</button>
+							{
+								CHARITY_URL ? (
+									<a class="button charity" href={CHARITY_URL} target="_blank" rel="noreferrer">
+										Charity
+									</a>
+								) : (
+									<span class="button charity disabled" aria-disabled="true" title="Charity link coming soon">
+										Charity link coming soon
+									</span>
+								)
+							}
+						</div>
+					</header>
+
+					<section class="map-anchor" aria-label="Route progress">
+						<div class="map-panel" id="progress-map" aria-label="Great Divide progress map">
+							{
+								GARMIN_MAP_EMBED_URL ? (
+									<iframe title="Garmin inReach progress map" src={GARMIN_MAP_EMBED_URL} loading="lazy" />
+								) : (
+									<div class="map-fallback">
+										<div class="route-label">
+											<p class="kicker">Progress map</p>
+											<h2>Route map pending</h2>
+											<p>
+												The Garmin inReach map will sit here once the MapShare embed URL is added.
+												For now, this panel anchors the latest known point from the updates.
+											</p>
+										</div>
+										<div class="latest-marker">
+											<span>Latest location</span>
+											<strong>{latestLocation}</strong>
+										</div>
+									</div>
+								)
+							}
+						</div>
+
+						<aside class="trip-panel" aria-label="Trip progress summary">
+							<div>
+								<p class="kicker">Trip Progress</p>
+							</div>
+
+							<div class="stats">
+								<div class="stat">
+									<strong>{totalDistanceKm.toLocaleString('en-GB')} km</strong>
+									<span>Total logged distance</span>
 								</div>
-								<div class="latest-marker">
-									<span>Latest location</span>
+								<div class="stat">
+									<strong>{totalElevationM.toLocaleString('en-GB')} m</strong>
+									<span>Total logged elevation</span>
+								</div>
+								<div class="stat">
 									<strong>{latestLocation}</strong>
+									<span>Most recent location</span>
+								</div>
+								<div class="stat">
+									<strong>{latestPost?.data.pubDate ? <FormattedDate date={latestPost.data.pubDate} /> : 'Pending'}</strong>
+									<span>Latest update</span>
 								</div>
 							</div>
-						)
-					}
+
+							<div>
+								<p class="about-copy">
+									Beth and Tom are riding the Great Divide Mountain Bike Route and raising money
+									for charity.
+								</p>
+							</div>
+						</aside>
+					</section>
 				</div>
-
-				<aside class="trip-panel" aria-label="Trip progress summary">
-					<div>
-						<p class="kicker">Progress</p>
-						<h2>Route, location, and ride totals at a glance.</h2>
-						<p class="about-copy">
-							Follow the map first, then scroll straight into the latest notes and photos from the
-							road.
-						</p>
-					</div>
-
-					<div class="stats">
-						<div class="stat">
-							<strong>{totalDistanceKm.toLocaleString('en-GB')} km</strong>
-							<span>Total logged distance</span>
-						</div>
-						<div class="stat">
-							<strong>{totalElevationM.toLocaleString('en-GB')} m</strong>
-							<span>Total logged elevation</span>
-						</div>
-						<div class="stat">
-							<strong>{latestLocation}</strong>
-							<span>Most recent location</span>
-						</div>
-						<div class="stat">
-							<strong>{latestPost?.data.pubDate ? <FormattedDate date={latestPost.data.pubDate} /> : 'Pending'}</strong>
-							<span>Latest update</span>
-						</div>
-					</div>
-
-					<div>
-						<p class="about-copy">
-							Beth and Tom are riding the Great Divide Mountain Bike Route and raising money for
-							charity.
-						</p>
-						<button class="button secondary" type="button" data-open-about>About Beth, Tom & charities</button>
-					</div>
-				</aside>
 			</section>
 
 			<dialog id="about-dialog" aria-labelledby="about-title">
@@ -469,9 +603,8 @@ const latestLocation =
 				<div class="feed-header">
 					<div>
 						<p class="kicker">Trail journal</p>
-						<h2 id="latest-updates-title">Latest updates</h2>
+						<h2 id="latest-updates-title">Trip Updates</h2>
 					</div>
-					<p>Newest first. Full update text is shown here; click any photo for the full-size file.</p>
 				</div>
 
 				{
@@ -482,10 +615,8 @@ const latestLocation =
 									<div>
 										<p class="update-meta">
 											{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
-											{post.data.day && ` · Day ${post.data.day}`}
 										</p>
-										<h3>{post.data.title}</h3>
-										<p>{post.data.description}</p>
+										<h3>{getPostTitle(post)}</h3>
 									</div>
 									<div class="update-stats" aria-label="Ride details">
 										{(post.data.routeStart || post.data.routeEnd) && (
@@ -503,7 +634,7 @@ const latestLocation =
 									<Content />
 								</div>
 								{post.data.photos.length > 0 && (
-									<div class="photo-grid" aria-label={`${post.data.title} photos`}>
+									<div class="photo-grid" aria-label={`${getPostTitle(post)} photos`}>
 										{post.data.photos.map((photo) => (
 											<a href={photo} target="_blank" rel="noreferrer">
 												<img src={photo} alt="" loading="lazy" />

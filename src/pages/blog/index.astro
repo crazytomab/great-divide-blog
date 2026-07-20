@@ -10,6 +10,15 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 const posts = (await getCollection('blog')).sort(
 	(a, b) => (b.data.pubDate?.valueOf() ?? 0) - (a.data.pubDate?.valueOf() ?? 0),
 );
+
+const getPostTitle = (post: (typeof posts)[number]) => {
+	const route =
+		post.data.routeStart || post.data.routeEnd
+			? `${post.data.routeStart ?? ''}${post.data.routeStart && post.data.routeEnd ? ' → ' : ''}${post.data.routeEnd ?? ''}`
+			: 'Route pending';
+
+	return `${post.data.day ? `Day ${post.data.day}` : 'Update'} · ${route}`;
+};
 ---
 
 <!doctype html>
@@ -115,12 +124,11 @@ const posts = (await getCollection('blog')).sort(
 										)
 									)}
 									<div>
-										<h4 class="title">{post.data.title}</h4>
+										<h4 class="title">{getPostTitle(post)}</h4>
 										<p class="date">
 											{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
-											{post.data.day && ` · Day ${post.data.day}`}
 										</p>
-										<p class="description">{post.data.description}</p>
+										{post.data.description && <p class="description">{post.data.description}</p>}
 									</div>
 								</a>
 							</li>
