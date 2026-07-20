@@ -8,7 +8,19 @@ import Header from '../components/Header.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, heroImage, day, routeStart, routeEnd, distanceKm, elevationM, photos } = Astro.props;
+const {
+	title,
+	description,
+	pubDate,
+	heroImage,
+	day,
+	routeStart,
+	routeEnd,
+	distanceKm,
+	elevationM,
+	photos = [],
+} =
+	Astro.props;
 ---
 
 <html lang="en">
@@ -52,6 +64,48 @@ const { title, description, pubDate, heroImage, day, routeStart, routeEnd, dista
 			.last-updated-on {
 				font-style: italic;
 			}
+			.details {
+				display: grid;
+				grid-template-columns: repeat(4, minmax(0, 1fr));
+				gap: 0.75rem;
+				margin: 1.5rem 0;
+				text-align: left;
+			}
+			.detail {
+				padding: 0.8rem;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 12px;
+				background: white;
+			}
+			.trip-label {
+				display: block;
+				color: rgb(var(--gray));
+				font-size: 0.8rem;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+			}
+			.detail strong {
+				display: block;
+				margin-top: 0.15rem;
+				color: rgb(var(--black));
+				font-size: 1rem;
+			}
+			.photo-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+				gap: 1rem;
+				margin-top: 2rem;
+			}
+			.photo-grid img {
+				aspect-ratio: 4 / 3;
+				object-fit: cover;
+				width: 100%;
+			}
+			@media (max-width: 720px) {
+				.details {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
+			}
 		</style>
 	</head>
 
@@ -68,19 +122,52 @@ const { title, description, pubDate, heroImage, day, routeStart, routeEnd, dista
 							<FormattedDate date={pubDate} />
 						</div>
 						<h1>{title}</h1>
-				        <div class="details">
-				            <span class="trip-label">Day</span>
-				            <strong>Day {day}</strong>
-				            <span class="trip-label">Route</span>
-				            <strong>{routeStart} -> {routeEnd}</strong>
-				            <span class="trip-label">Distance</span>
-				            <strong>{distanceKm} Km</strong>
-				            <span class="trip-label">Elevation</span>
-				            <strong>{elevation} m</strong>
-				        </div>
+						{
+							(day || routeStart || routeEnd || distanceKm || elevationM) && (
+								<div class="details">
+									{day && (
+										<div class="detail">
+											<span class="trip-label">Day</span>
+											<strong>{day}</strong>
+										</div>
+									)}
+									{(routeStart || routeEnd) && (
+										<div class="detail">
+											<span class="trip-label">Route</span>
+											<strong>
+												{routeStart}
+												{routeStart && routeEnd ? ' → ' : ''}
+												{routeEnd}
+											</strong>
+										</div>
+									)}
+									{distanceKm && (
+										<div class="detail">
+											<span class="trip-label">Distance</span>
+											<strong>{distanceKm} km</strong>
+										</div>
+									)}
+									{elevationM && (
+										<div class="detail">
+											<span class="trip-label">Elevation</span>
+											<strong>{elevationM} m</strong>
+										</div>
+									)}
+								</div>
+							)
+						}
 						<hr />
 					</div>
 					<slot />
+					{
+						photos.length > 0 && (
+							<div class="photo-grid" aria-label="Ride photos">
+								{photos.map((photo) => (
+									<img src={photo} alt="" loading="lazy" />
+								))}
+							</div>
+						)
+					}
 				</div>
 			</article>
 		</main>

@@ -1,48 +1,331 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getCollection } from 'astro:content';
+import { GARMIN_MAP_EMBED_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => (b.data.pubDate?.valueOf() ?? 0) - (a.data.pubDate?.valueOf() ?? 0),
+);
+
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			main {
+				width: 1120px;
+			}
+			.hero {
+				display: grid;
+				grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+				gap: 2rem;
+				align-items: stretch;
+				padding: 2rem 0;
+			}
+			.eyebrow {
+				margin: 0 0 0.75rem;
+				color: var(--accent-dark);
+				font-size: 0.85rem;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+			}
+			.hero h1 {
+				max-width: 760px;
+				font-size: clamp(2.7rem, 7vw, 5.8rem);
+			}
+			.lede {
+				max-width: 720px;
+				color: rgb(var(--gray-dark));
+				font-size: 1.3rem;
+			}
+			.hero-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				margin-top: 1.5rem;
+			}
+			.button {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0.75rem 1rem;
+				border-radius: 999px;
+				background: var(--accent);
+				color: white;
+				font-weight: 700;
+				text-decoration: none;
+			}
+			.button.secondary {
+				background: rgb(var(--gray-light));
+				color: rgb(var(--gray-dark));
+			}
+			.map-card,
+			.card,
+			.update-card {
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 24px;
+				background: rgba(255, 255, 255, 0.86);
+				box-shadow: 0 16px 40px rgba(var(--gray), 18%);
+			}
+			.map-card {
+				overflow: hidden;
+			}
+			.map-frame {
+				display: grid;
+				min-height: 460px;
+				place-items: center;
+				background:
+					linear-gradient(135deg, rgba(35, 55, 255, 0.12), transparent 45%),
+					linear-gradient(45deg, #e4eddc, #b7c7a1);
+			}
+			.map-frame iframe {
+				width: 100%;
+				height: 460px;
+				border: 0;
+			}
+			.map-placeholder {
+				max-width: 320px;
+				padding: 2rem;
+				text-align: center;
+			}
+			.map-placeholder span {
+				display: block;
+				margin-bottom: 0.75rem;
+				font-size: 3rem;
+			}
+			.map-meta {
+				display: flex;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 1rem 1.25rem;
+				color: rgb(var(--gray));
+				font-size: 0.9rem;
+			}
+			.section {
+				margin: 4rem 0;
+			}
+			.section-header {
+				display: flex;
+				align-items: end;
+				justify-content: space-between;
+				gap: 1rem;
+				margin-bottom: 1rem;
+			}
+			.section-header p {
+				max-width: 620px;
+				margin: 0;
+				color: rgb(var(--gray));
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 1rem;
+			}
+			.card {
+				padding: 1.25rem;
+			}
+			.card h3 {
+				font-size: 1.25rem;
+			}
+			.stats {
+				display: grid;
+				grid-template-columns: repeat(4, minmax(0, 1fr));
+				gap: 1rem;
+				margin-top: 1.5rem;
+			}
+			.stat {
+				padding: 1rem;
+				border-radius: 18px;
+				background: rgb(var(--gray-dark));
+				color: white;
+			}
+			.stat strong {
+				display: block;
+				font-size: 1.6rem;
+			}
+			.stat span {
+				color: rgba(255, 255, 255, 0.72);
+				font-size: 0.85rem;
+			}
+			.updates {
+				display: grid;
+				gap: 1rem;
+			}
+			.update-card {
+				display: grid;
+				grid-template-columns: 180px minmax(0, 1fr);
+				gap: 1rem;
+				padding: 1rem;
+				color: inherit;
+				text-decoration: none;
+			}
+			.update-card img {
+				width: 100%;
+				height: 140px;
+				object-fit: cover;
+			}
+			.update-meta {
+				margin: 0 0 0.35rem;
+				color: rgb(var(--gray));
+				font-size: 0.9rem;
+			}
+			.update-card h3 {
+				margin-bottom: 0.35rem;
+				font-size: 1.45rem;
+			}
+			.update-card p {
+				margin: 0;
+			}
+			@media (max-width: 860px) {
+				.hero,
+				.update-card {
+					grid-template-columns: 1fr;
+				}
+				.grid,
+				.stats {
+					grid-template-columns: 1fr;
+				}
+				.map-frame,
+				.map-frame iframe {
+					min-height: 360px;
+					height: 360px;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">Canada to Mexico by bike</p>
+					<h1>Following Beth and Tom down the Great Divide.</h1>
+					<p class="lede">
+						A live-ish trail journal for our bikepacking ride along the Great Divide Mountain Bike
+						Route, with Garmin inReach progress, short field notes, photos, and the charities we are
+						raising money for.
+					</p>
+					<div class="hero-actions">
+						<a class="button" href="#progress-map">See the map</a>
+						<a class="button secondary" href="#latest-updates">Read updates</a>
+					</div>
+				</div>
+				<aside class="map-card" id="progress-map" aria-label="Trip progress map">
+					<div class="map-frame">
+						{
+							GARMIN_MAP_EMBED_URL ? (
+								<iframe title="Garmin inReach progress map" src={GARMIN_MAP_EMBED_URL} loading="lazy" />
+							) : (
+								<div class="map-placeholder">
+									<span aria-hidden="true">🗺️</span>
+									<h2>Progress map</h2>
+									<p>
+										Add the Garmin inReach MapShare embed URL in <code>src/consts.ts</code> to
+										show the live route here.
+									</p>
+								</div>
+							)
+						}
+					</div>
+					<div class="map-meta">
+						<span>Great Divide Mountain Bike Route</span>
+						<span>Updated from Garmin inReach</span>
+					</div>
+				</aside>
+			</section>
+
+			<section class="section" aria-labelledby="trip-summary">
+				<div class="section-header">
+					<div>
+						<p class="eyebrow">The ride</p>
+						<h2 id="trip-summary">A long line through the Rockies</h2>
+					</div>
+					<p>
+						The route crosses high passes, huge forests, desert basins, and remote resupply towns
+						on its way from the Canadian border to New Mexico.
+					</p>
+				</div>
+				<div class="stats">
+					<div class="stat"><strong>4,400 km</strong><span>Approximate route length</span></div>
+					<div class="stat"><strong>5 states</strong><span>Montana to New Mexico</span></div>
+					<div class="stat"><strong>Mostly dirt</strong><span>Gravel, jeep road, and trail</span></div>
+					<div class="stat"><strong>Self-supported</strong><span>Bikes, bags, tents, repeat</span></div>
+				</div>
+			</section>
+
+			<section class="section" aria-labelledby="about-charities">
+				<div class="section-header">
+					<div>
+						<p class="eyebrow">Riding for a reason</p>
+						<h2 id="about-charities">Beth, Tom, and the charities</h2>
+					</div>
+					<a href="/about/">More about us</a>
+				</div>
+				<div class="grid">
+					<article class="card">
+						<h3>Beth</h3>
+						<p>
+							Beth is taking on the Divide for the challenge, the landscapes, and the chance to
+							turn a big ride into support for causes that matter.
+						</p>
+					</article>
+					<article class="card">
+						<h3>Tom</h3>
+						<p>
+							Tom is documenting the route, keeping the bikes moving, and sharing the small moments
+							that make a long trip worth following.
+						</p>
+					</article>
+					<article class="card">
+						<h3>Charities</h3>
+						<p>
+							Add fundraising links and charity details here once confirmed. This section is ready
+							for donation buttons, logos, and progress totals.
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section class="section" id="latest-updates" aria-labelledby="latest-updates-title">
+				<div class="section-header">
+					<div>
+						<p class="eyebrow">Trail journal</p>
+						<h2 id="latest-updates-title">Latest updates</h2>
+					</div>
+					<a href="/blog/">All posts</a>
+				</div>
+				<div class="updates">
+					{
+						posts.length > 0 ? (
+							posts.map((post) => (
+								<a class="update-card" href={`/blog/${post.id}/`}>
+									{post.data.photos[0] ? (
+										<img src={post.data.photos[0]} alt="" loading="lazy" />
+									) : (
+										<div class="map-frame" aria-hidden="true" />
+									)}
+									<div>
+										<p class="update-meta">
+											{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
+											{post.data.day && ` · Day ${post.data.day}`}
+										</p>
+										<h3>{post.data.title}</h3>
+										<p>{post.data.description}</p>
+									</div>
+								</a>
+							))
+						) : (
+							<p>No updates yet. Check back once we are on the road.</p>
+						)
+					}
+				</div>
+			</section>
 		</main>
 		<Footer />
 	</body>
