@@ -10,10 +10,15 @@ const blog = defineCollection({
 		z.object({
 			title: z.string(),
 			description: z.string(),
-			// Transform string to Date object
-			pubDate: z.coerce.date(),
-			updatedDate: z.coerce.date().optional(),
-			heroImage: z.optional(image()),
+			pubDate: z.coerce.date().optional(),
+			heroImage: image().optional(),
+
+			day: z.number().int().positive().optional(),
+			routeStart: z.string().optional(),
+			routeEnd: z.string().optional(),
+			distanceKm: z.number().int().positive().optional(),
+			elevationM: z.number().int().positive().optional(),
+			photos: z.array(z.string()).default([]),
 		}),
 });
 

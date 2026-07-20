@@ -8,7 +8,7 @@ import Header from '../components/Header.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, heroImage, day, routeStart, routeEnd, distanceKm, elevationM, photos } = Astro.props;
 ---
 
 <html lang="en">
@@ -66,15 +66,18 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 					<div class="title">
 						<div class="date">
 							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
 						</div>
 						<h1>{title}</h1>
+				        <div class="details">
+				            <span class="trip-label">Day</span>
+				            <strong>Day {day}</strong>
+				            <span class="trip-label">Route</span>
+				            <strong>{routeStart} -> {routeEnd}</strong>
+				            <span class="trip-label">Distance</span>
+				            <strong>{distanceKm} Km</strong>
+				            <span class="trip-label">Elevation</span>
+				            <strong>{elevation} m</strong>
+				        </div>
 						<hr />
 					</div>
 					<slot />
