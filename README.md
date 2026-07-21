@@ -1,63 +1,56 @@
-# Astro Starter Kit: Blog
+# Beth & Tom: Great Divide Blog
 
-```sh
-npm create astro@latest -- --template blog
+Static Astro site for tracking Beth and Tom’s Great Divide bikepacking trip.
+
+The public page is built around:
+
+- a progress map / latest location section
+- trip mileage and elevation totals
+- About and Charity actions
+- newest-first trail journal updates with photos
+- a phone-friendly `/admin` editor powered by Decap CMS on Netlify
+
+## Common commands
+
+Run commands from the repo root.
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Local URLs:
 
-Features:
+- Main site: `http://localhost:4321/`
+- Admin editor: `http://localhost:4321/admin/`
+- CMS config: `http://localhost:4321/admin/config.yml`
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+`npm run build` creates the production site in `dist/`. It does not start a server.
 
-## 🚀 Project Structure
+## Useful docs
 
-Inside of your Astro project, you'll see the following folders and files:
+- [GitHub repo management](./docs/GITHUB_WORKFLOW.md)
+- [Manual blog updates](./docs/MANUAL_UPDATES.md)
+- [Netlify and admin updates](./docs/NETLIFY_ADMIN_UPDATES.md)
+- [New post template](./NEW_POST_TEMPLATE.md)
 
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
-```
+## Key files
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+- `src/pages/index.astro` — homepage layout and gallery behaviour
+- `src/pages/admin.astro` — Decap CMS admin page
+- `public/admin/config.yml` — CMS form configuration
+- `src/content/blog/` — Markdown trip updates
+- `public/images/posts/` — public blog images
+- `src/content.config.ts` — content schema for trip updates
+- `netlify.toml` — Netlify build settings
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Update options
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+There are two supported ways to add updates:
 
-Any static assets, like images, can be placed in the `public/` directory.
+1. Manual GitHub/file update: edit Markdown and images directly, then commit/push.
+2. Netlify admin update: use `/admin` on the live site to fill in a form and upload photos.
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+For the trip, the Netlify admin route should be the easiest from a phone once Netlify Identity and Git Gateway are enabled.
