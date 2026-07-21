@@ -631,8 +631,8 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 					background-position: center top;
 				}
 				.top-section::before {
-					position: absolute;
-					background-position: center top;
+					position: fixed;
+					background-position: center 18%;
 				}
 				.site-title h1 {
 					font-size: clamp(1.45rem, 8vw, 2.4rem);
@@ -719,7 +719,10 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 				<div class="top-inner">
 					<header class="site-hero" aria-labelledby="route-title">
 						<div class="site-title">
-							<h1 id="route-title">Bikepacking Canada to Mexico</h1>
+							<h1 id="route-title">Bikepacking Across America</h1>
+							<p>
+								Follow our Adventure down the Great Divide Mountain Bike Trail
+							</p>
 						</div>
 						<div class="site-actions" aria-label="Page actions">
 							<button class="button secondary" type="button" data-open-about>
@@ -855,7 +858,6 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 				<div class="dialog-inner">
 					<div class="dialog-header">
 						<div>
-							<p class="kicker">About the ride</p>
 							<h2 id="about-title">What are we doing?</h2>
 						</div>
 						<button class="close-button" type="button" data-close-about aria-label="Close about dialog">×</button>
