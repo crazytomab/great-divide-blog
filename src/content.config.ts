@@ -14,6 +14,7 @@ const blog = defineCollection({
 			heroImage: image().optional(),
 
 			day: z.number().int().positive().optional(),
+			dayEnd: z.number().int().positive().optional(),
 			routeStart: z.string().optional(),
 			routeEnd: z.string().optional(),
 			distanceKm: z.number().int().positive().optional(),

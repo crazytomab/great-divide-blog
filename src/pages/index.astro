@@ -18,12 +18,18 @@ const latestLocation =
 	latestPost?.data.routeEnd || latestPost?.data.routeStart || (posts.length > 0 ? 'Location pending' : 'Not started');
 
 const getPostTitle = (post: (typeof posts)[number]) => {
+	const dayLabel =
+		post.data.day && post.data.dayEnd
+			? `Days ${post.data.day}–${post.data.dayEnd}`
+			: post.data.day
+				? `Day ${post.data.day}`
+				: 'Update';
 	const route =
 		post.data.routeStart || post.data.routeEnd
 			? `${post.data.routeStart ?? ''}${post.data.routeStart && post.data.routeEnd ? ' → ' : ''}${post.data.routeEnd ?? ''}`
 			: 'Route pending';
 
-	return `${post.data.day ? `Day ${post.data.day}` : 'Update'}: ${route}`;
+	return `${dayLabel}: ${route}`;
 };
 
 const normalizePhotos = (photos: (typeof posts)[number]['data']['photos']) =>
@@ -427,6 +433,9 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 			.update-content .update-body {
 				max-width: none;
 			}
+			.update-content:has(.gallery-photo:nth-child(4)) .update-body {
+				grid-column: 1 / -1;
+			}
 			.update-body p:last-child {
 				margin-bottom: 0;
 			}
@@ -435,14 +444,30 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 			}
 			.post-gallery {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+				grid-template-columns: repeat(6, minmax(0, 1fr));
 				gap: 0.9rem;
 				align-content: start;
 				margin-top: 0;
 			}
+			.update-content[data-photo-count='1'] .post-gallery,
+			.update-content[data-photo-count='3'] .post-gallery {
+				display: contents;
+			}
+			.update-content[data-photo-count='2'] .update-body {
+				grid-column: 1 / -1;
+			}
+			.update-content[data-photo-count='2'] .post-gallery {
+				grid-column: 1 / -1;
+				margin-top: 0.25rem;
+			}
+			.update-content:has(.gallery-photo:nth-child(4)) .post-gallery {
+				grid-column: 1 / -1;
+				margin-top: 0.25rem;
+			}
 			.gallery-photo {
 				display: grid;
 				grid-template-rows: 1fr auto;
+				grid-column: span 2;
 				padding: 0;
 				overflow: hidden;
 				border: 1px solid rgb(var(--gray-light));
@@ -452,6 +477,29 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 				font: inherit;
 				text-align: left;
 				cursor: pointer;
+			}
+			.update-content[data-photo-count='1'] .gallery-photo:first-child,
+			.update-content[data-photo-count='3'] .gallery-photo:first-child {
+				grid-column: 2;
+				grid-row: 1;
+			}
+			.update-content[data-photo-count='3'] .gallery-photo:nth-child(2) {
+				grid-column: 1;
+				grid-row: 2;
+			}
+			.update-content[data-photo-count='3'] .gallery-photo:nth-child(3) {
+				grid-column: 2;
+				grid-row: 2;
+			}
+			.update-content[data-photo-count='2'] .gallery-photo {
+				grid-column: span 3;
+			}
+			.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:first-child,
+			.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(2) {
+				grid-column: span 3;
+			}
+			.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(n + 3) {
+				grid-column: span 2;
 			}
 			.gallery-photo img {
 				display: block;
@@ -560,6 +608,18 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 				.update-content {
 					grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
 				}
+				.post-gallery {
+					grid-template-columns: repeat(6, minmax(0, 1fr));
+				}
+				.gallery-photo,
+				.gallery-photo:first-child,
+				.gallery-photo:nth-child(2),
+				.gallery-photo:nth-child(3),
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:first-child,
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(2),
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(n + 3) {
+					grid-column: span 6;
+				}
 			}
 			@media (max-width: 720px) {
 				main {
@@ -627,6 +687,18 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 					grid-template-columns: 1fr;
 					gap: 0.85rem;
 					margin-top: 1rem;
+				}
+				.update-content:has(.gallery-photo:nth-child(4)) .post-gallery {
+					margin-top: 1rem;
+				}
+				.gallery-photo,
+				.gallery-photo:first-child,
+				.gallery-photo:nth-child(2),
+				.gallery-photo:nth-child(3),
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:first-child,
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(2),
+				.update-content:has(.gallery-photo:nth-child(4)) .gallery-photo:nth-child(n + 3) {
+					grid-column: auto;
 				}
 				.gallery-photo img {
 					aspect-ratio: 4 / 3;
@@ -747,7 +819,7 @@ const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
 												{post.data.elevationM && <span>{post.data.elevationM} m</span>}
 											</div>
 										</div>
-										<div class="update-content">
+										<div class="update-content" data-photo-count={photos.length}>
 											<div class="update-body">
 												<Content />
 											</div>
