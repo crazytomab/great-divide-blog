@@ -19,7 +19,7 @@ export async function GET(context) {
 				...post.data,
 				title,
 				description: post.data.description ?? `Update from ${route}`,
-				link: `/blog/${post.id}/`,
+				link: '/#latest-updates',
 			};
 		}),
 	});
