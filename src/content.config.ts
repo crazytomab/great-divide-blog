@@ -17,8 +17,8 @@ const blog = defineCollection({
 			dayEnd: z.number().int().positive().optional(),
 			routeStart: z.string().optional(),
 			routeEnd: z.string().optional(),
-			distanceKm: z.number().int().positive().optional(),
-			elevationM: z.number().int().positive().optional(),
+			distanceKm: z.number().int().nonnegative().optional(),
+			elevationM: z.number().int().nonnegative().optional(),
 			photos: z
 				.array(
 					z.union([

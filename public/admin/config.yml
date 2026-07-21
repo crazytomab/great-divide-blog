@@ -1,0 +1,73 @@
+backend:
+  name: git-gateway
+  branch: master
+
+media_folder: public/images/posts/uploads
+public_folder: /images/posts/uploads
+
+collections:
+  - name: blog
+    label: Trip updates
+    label_singular: Trip update
+    folder: src/content/blog
+    create: true
+    extension: md
+    format: frontmatter
+    slug: day-{{day}}
+    preview_path: /#latest-updates
+    fields:
+      - label: Publish date
+        name: pubDate
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: Start day
+        name: day
+        widget: number
+        value_type: int
+        min: 1
+      - label: End day
+        name: dayEnd
+        widget: number
+        value_type: int
+        min: 1
+        required: false
+        hint: Only use this for multi-day updates, for example start day 3 and end day 5.
+      - label: Start location
+        name: routeStart
+        widget: string
+        required: false
+      - label: End location
+        name: routeEnd
+        widget: string
+        required: false
+      - label: Distance in km
+        name: distanceKm
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+      - label: Elevation in metres
+        name: elevationM
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+      - label: Photos
+        name: photos
+        widget: list
+        required: false
+        summary: "{{fields.caption}}"
+        fields:
+          - label: Image
+            name: src
+            widget: image
+          - label: Caption
+            name: caption
+            widget: string
+            required: false
+      - label: Update text
+        name: body
+        widget: markdown
+        required: false
