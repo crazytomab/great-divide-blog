@@ -11,13 +11,6 @@ const posts = (await getCollection('blog')).sort((a, b) => {
 	return dateDiff || (b.data.day ?? 0) - (a.data.day ?? 0);
 });
 
-const updates = await Promise.all(
-	posts.map(async (post) => {
-		const { Content } = await render(post);
-		return { post, Content };
-	}),
-);
-
 const latestPost = posts[0];
 const totalDistanceKm = posts.reduce((total, post) => total + (post.data.distanceKm ?? 0), 0);
 const totalElevationM = posts.reduce((total, post) => total + (post.data.elevationM ?? 0), 0);
@@ -46,10 +39,33 @@ const normalizePhotos = (photos: (typeof posts)[number]['data']['photos']) =>
 				},
 	);
 
-const galleryData = updates.map(({ post }) => ({
-	title: getPostTitle(post),
-	photos: normalizePhotos(post.data.photos),
+const updates = await Promise.all(
+	posts.map(async (post) => {
+		const { Content } = await render(post);
+		return {
+			post,
+			Content,
+			title: getPostTitle(post),
+			photos: normalizePhotos(post.data.photos),
+		};
+	}),
+);
+
+let galleryPhotoIndex = 0;
+const updatesWithPhotoIndexes = updates.map((update) => ({
+	...update,
+	photos: update.photos.map((photo) => ({
+		...photo,
+		galleryIndex: galleryPhotoIndex++,
+	})),
 }));
+
+const galleryData = updatesWithPhotoIndexes.flatMap(({ title, photos }) =>
+	photos.map(({ galleryIndex, ...photo }) => ({
+		...photo,
+		postTitle: title,
+	})),
+);
 ---
 
 <!doctype html>
@@ -60,6 +76,10 @@ const galleryData = updates.map(({ post }) => ({
 			:global(body) {
 				background: #c4b68f;
 				background-image: none;
+			}
+			:global(html.modal-open),
+			:global(html.modal-open body) {
+				overflow: hidden;
 			}
 			main {
 				width: 100%;
@@ -97,13 +117,18 @@ const galleryData = updates.map(({ post }) => ({
 				isolation: isolate;
 				min-height: 100vh;
 				padding: 1rem 1rem 4rem;
+			}
+			.top-section::before {
+				content: '';
+				position: fixed;
+				inset: 0;
+				z-index: -1;
 				background-image:
 					linear-gradient(180deg, rgba(15, 18, 25, 0.42), rgba(15, 18, 25, 0.18) 45%, rgba(15, 18, 25, 0) 100%),
 					var(--hero-image);
 				background-position: center top;
 				background-repeat: no-repeat;
 				background-size: cover;
-				background-attachment: fixed;
 			}
 			.top-inner {
 				width: min(1280px, 100%);
@@ -357,6 +382,15 @@ const galleryData = updates.map(({ post }) => ({
 			.update {
 				padding: 1.25rem;
 			}
+			.update-content {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) minmax(520px, 680px);
+				gap: 1.25rem 1.5rem;
+				align-items: start;
+			}
+			.update-content:not(:has(.post-gallery)) {
+				display: block;
+			}
 			.update-header {
 				display: flex;
 				align-items: start;
@@ -390,6 +424,9 @@ const galleryData = updates.map(({ post }) => ({
 			.update-body {
 				max-width: 840px;
 			}
+			.update-content .update-body {
+				max-width: none;
+			}
 			.update-body p:last-child {
 				margin-bottom: 0;
 			}
@@ -398,9 +435,10 @@ const galleryData = updates.map(({ post }) => ({
 			}
 			.post-gallery {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-				gap: 0.75rem;
-				margin-top: 1rem;
+				grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+				gap: 0.9rem;
+				align-content: start;
+				margin-top: 0;
 			}
 			.gallery-photo {
 				display: grid;
@@ -408,8 +446,8 @@ const galleryData = updates.map(({ post }) => ({
 				padding: 0;
 				overflow: hidden;
 				border: 1px solid rgb(var(--gray-light));
-				border-radius: 16px;
-				background: white;
+				border-radius: 18px;
+				background: rgba(255, 255, 255, 0.96);
 				color: inherit;
 				font: inherit;
 				text-align: left;
@@ -426,9 +464,9 @@ const galleryData = updates.map(({ post }) => ({
 				margin: 0;
 			}
 			.gallery-photo figcaption {
-				padding: 0.55rem 0.65rem;
+				padding: 0.7rem 0.8rem;
 				color: rgb(var(--gray-dark));
-				font-size: 0.85rem;
+				font-size: 0.9rem;
 				line-height: 1.3;
 			}
 			.gallery-photo:hover img {
@@ -491,6 +529,9 @@ const galleryData = updates.map(({ post }) => ({
 				height: 2.8rem;
 				font-size: 1.8rem;
 			}
+			.gallery-nav[hidden] {
+				display: none;
+			}
 			@media (max-width: 980px) {
 				.map-anchor {
 					grid-template-columns: 1fr;
@@ -516,6 +557,9 @@ const galleryData = updates.map(({ post }) => ({
 				.about-grid {
 					grid-template-columns: 1fr;
 				}
+				.update-content {
+					grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+				}
 			}
 			@media (max-width: 720px) {
 				main {
@@ -525,7 +569,10 @@ const galleryData = updates.map(({ post }) => ({
 				.top-section {
 					padding: 0.5rem;
 					background-position: center top;
-					background-attachment: scroll;
+				}
+				.top-section::before {
+					position: absolute;
+					background-position: center top;
 				}
 				.site-title h1 {
 					font-size: clamp(1.45rem, 8vw, 2.4rem);
@@ -567,7 +614,8 @@ const galleryData = updates.map(({ post }) => ({
 					bottom: 1.5rem;
 				}
 				.update-header,
-				.feed-header {
+				.feed-header,
+				.update-content {
 					display: block;
 				}
 				.update-stats {
@@ -575,7 +623,13 @@ const galleryData = updates.map(({ post }) => ({
 					margin-top: 0.75rem;
 				}
 				.post-gallery {
-					grid-template-columns: repeat(2, minmax(0, 1fr));
+					display: grid;
+					grid-template-columns: 1fr;
+					gap: 0.85rem;
+					margin-top: 1rem;
+				}
+				.gallery-photo img {
+					aspect-ratio: 4 / 3;
 				}
 				.gallery-inner {
 					grid-template-columns: 1fr;
@@ -678,41 +732,43 @@ const galleryData = updates.map(({ post }) => ({
 						</div>
 
 						{
-							updates.length > 0 ? (
-								updates.map(({ post, Content }) => (
+							updatesWithPhotoIndexes.length > 0 ? (
+								updatesWithPhotoIndexes.map(({ post, Content, title, photos }) => (
 									<article class="update">
 										<div class="update-header">
 											<div>
 												<p class="update-meta">
 													{post.data.pubDate && <FormattedDate date={post.data.pubDate} />}
 												</p>
-												<h3>{getPostTitle(post)}</h3>
+												<h3>{title}</h3>
 											</div>
 											<div class="update-stats" aria-label="Ride details">
 												{post.data.distanceKm && <span>{post.data.distanceKm} km</span>}
 												{post.data.elevationM && <span>{post.data.elevationM} m</span>}
 											</div>
 										</div>
-										<div class="update-body">
-											<Content />
-										</div>
-										{normalizePhotos(post.data.photos).length > 0 && (
-											<div class="post-gallery" aria-label={`${getPostTitle(post)} photos`}>
-												{normalizePhotos(post.data.photos).map((photo, photoIndex) => (
-													<button
-														class="gallery-photo"
-														type="button"
-														data-gallery={updates.findIndex((update) => update.post.id === post.id)}
-														data-photo={photoIndex}
-													>
-														<figure>
-															<img src={photo.src} alt={photo.caption ?? ''} loading="lazy" />
-															<figcaption>{photo.caption}</figcaption>
-														</figure>
-													</button>
-												))}
+										<div class="update-content">
+											<div class="update-body">
+												<Content />
 											</div>
-										)}
+											{photos.length > 0 && (
+												<div class="post-gallery" aria-label={`${title} photos`}>
+													{photos.map((photo) => (
+														<button
+															class="gallery-photo"
+															type="button"
+															data-photo={photo.galleryIndex}
+															aria-label={`Open photo: ${photo.caption}`}
+														>
+															<figure>
+																<img src={photo.src} alt={photo.caption ?? ''} loading="lazy" />
+																<figcaption>{photo.caption}</figcaption>
+															</figure>
+														</button>
+													))}
+												</div>
+											)}
+										</div>
 									</article>
 								))
 							) : (
@@ -788,9 +844,16 @@ const galleryData = updates.map(({ post }) => ({
 			const aboutDialog = document.getElementById('about-dialog');
 			const openAbout = document.querySelector('[data-open-about]');
 			const closeAbout = document.querySelector('[data-close-about]');
+			const setModalOpen = () => {
+				const anyOpen = document.querySelector('dialog[open]');
+				document.documentElement.classList.toggle('modal-open', Boolean(anyOpen));
+			};
 
 			openAbout?.addEventListener('click', () => {
-				if (aboutDialog instanceof HTMLDialogElement) aboutDialog.showModal();
+				if (aboutDialog instanceof HTMLDialogElement) {
+					aboutDialog.showModal();
+					setModalOpen();
+				}
 			});
 
 			closeAbout?.addEventListener('click', () => {
@@ -802,51 +865,57 @@ const galleryData = updates.map(({ post }) => ({
 					aboutDialog.close();
 				}
 			});
+			aboutDialog?.addEventListener('close', setModalOpen);
 
 			const galleryData = JSON.parse(document.getElementById('gallery-data')?.textContent || '[]');
 			const galleryDialog = document.getElementById('gallery-dialog');
 			const galleryImage = document.querySelector('[data-gallery-image]');
 			const galleryCaption = document.querySelector('[data-gallery-caption]');
-			let activeGallery = 0;
+			const galleryPrev = document.querySelector('[data-gallery-prev]');
+			const galleryNext = document.querySelector('[data-gallery-next]');
 			let activePhoto = 0;
 			let touchStartX = 0;
 
 			const showPhoto = () => {
-				const gallery = galleryData[activeGallery];
-				const photo = gallery?.photos?.[activePhoto];
+				const photo = galleryData[activePhoto];
 				if (!photo || !(galleryImage instanceof HTMLImageElement) || !galleryCaption) return;
 				galleryImage.src = photo.src;
 				galleryImage.alt = photo.caption || '';
 				galleryCaption.textContent = photo.caption || '';
+				const hasMultiplePhotos = galleryData.length > 1;
+				if (galleryPrev instanceof HTMLElement) galleryPrev.hidden = !hasMultiplePhotos;
+				if (galleryNext instanceof HTMLElement) galleryNext.hidden = !hasMultiplePhotos;
 			};
 
 			const movePhoto = (direction) => {
-				const gallery = galleryData[activeGallery];
-				if (!gallery?.photos?.length) return;
-				activePhoto = (activePhoto + direction + gallery.photos.length) % gallery.photos.length;
+				if (!galleryData.length) return;
+				activePhoto = (activePhoto + direction + galleryData.length) % galleryData.length;
 				showPhoto();
 			};
 
-			document.querySelectorAll('[data-gallery][data-photo]').forEach((button) => {
+			document.querySelectorAll('[data-photo]').forEach((button) => {
 				button.addEventListener('click', () => {
-					activeGallery = Number(button.getAttribute('data-gallery') || 0);
 					activePhoto = Number(button.getAttribute('data-photo') || 0);
 					showPhoto();
-					if (galleryDialog instanceof HTMLDialogElement) galleryDialog.showModal();
+					if (galleryDialog instanceof HTMLDialogElement) {
+						galleryDialog.showModal();
+						setModalOpen();
+					}
 				});
 			});
 
 			document.querySelector('[data-gallery-close]')?.addEventListener('click', () => {
 				if (galleryDialog instanceof HTMLDialogElement) galleryDialog.close();
 			});
-			document.querySelector('[data-gallery-prev]')?.addEventListener('click', () => movePhoto(-1));
-			document.querySelector('[data-gallery-next]')?.addEventListener('click', () => movePhoto(1));
+			galleryPrev?.addEventListener('click', () => movePhoto(-1));
+			galleryNext?.addEventListener('click', () => movePhoto(1));
 
 			galleryDialog?.addEventListener('click', (event) => {
 				if (event.target === galleryDialog && galleryDialog instanceof HTMLDialogElement) {
 					galleryDialog.close();
 				}
 			});
+			galleryDialog?.addEventListener('close', setModalOpen);
 			galleryDialog?.addEventListener('touchstart', (event) => {
 				touchStartX = event.changedTouches[0]?.clientX || 0;
 			});
